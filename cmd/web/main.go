@@ -34,7 +34,7 @@ func main() {
 	errs := make(chan error, 2)
 
 	go func() {
-		logger.InfoLog.Println("RUNNING API")
+		logger.InfoLog.Println("RUNNING API :4000")
 		err := server.ListenAndServe()
 		if err != nil {
 			errs <- err
