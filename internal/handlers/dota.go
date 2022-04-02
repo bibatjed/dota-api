@@ -15,7 +15,6 @@ func NewDota(logger *internal.Logger) *Dota {
 	}
 }
 
-
-func (d *Dota) GetAllHeroes(w http.ResponseWriter, r *http.Request){
+func (d *Dota) GetAllHeroes(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("sample"))
 }

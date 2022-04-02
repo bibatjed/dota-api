@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"dota-api/internal"
+	db2 "dota-api/internal/db"
 	"dota-api/internal/routes"
 	"fmt"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,9 +16,15 @@ import (
 )
 
 func main() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
 
 	logger := internal.InitializeLogger()
-	mux := routes.InitializeRoutes(logger)
+	db := db2.NewDB(logger)
+	mux := routes.InitializeRoutes(logger, db)
 	server := &http.Server{
 		Addr:     ":4000",
 		ErrorLog: logger.ErrorLog,
