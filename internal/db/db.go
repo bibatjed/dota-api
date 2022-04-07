@@ -3,10 +3,12 @@ package db
 import (
 	"dota-api/internal"
 	"dota-api/internal/models"
+	"dota-api/internal/utils"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"os"
+	"strconv"
 )
 
 type DB struct {
@@ -22,9 +24,24 @@ func NewDB(logger *internal.Logger) *DB {
 	return &DB{db}
 }
 
-func (d *DB) GetAllHeroes() []models.Hero {
+func (d *DB) GetAllHeroes(pagination utils.Pagination) []models.Hero {
 	var hero []models.Hero
-	err := d.DB.Select(&hero, "SELECT \n\th.name as hero_name,\n    h.localized_name as localized_name,\n    c.name as class_name,\n    h.image_url\nFROM\n\thero h\nINNER JOIN\n\tclass c ON c.id = h.class_id")
+	query := `SELECT 
+	h.name as hero_name,
+    h.localized_name as localized_name,
+    c.name as class_name,
+    h.image_url
+	FROM
+		hero h
+	INNER JOIN
+		class c ON c.id = h.class_id`
+
+	query += "\nLIMIT " + strconv.Itoa(pagination.Limit)
+	query += " OFFSET " + strconv.Itoa(pagination.Offset)
+
+	fmt.Println(query)
+
+	err := d.DB.Select(&hero, query)
 	if err != nil {
 		fmt.Print(err)
 		return nil
