@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 )
@@ -15,6 +16,10 @@ func calculateOffset(pagination *Pagination) {
 	pagination.Offset = pagination.Limit * (pagination.Page - 1)
 }
 
+func CalculatePages(page, limit int) int {
+	return int(math.Ceil(float64(page / limit)))
+}
+
 func GeneratePagination(r *http.Request) Pagination {
 	page := r.URL.Query().Get("page")
 	limit := r.URL.Query().Get("limit")
@@ -22,7 +27,7 @@ func GeneratePagination(r *http.Request) Pagination {
 	//add default pagination
 	pagination := Pagination{
 		Page:  1,
-		Limit: 1,
+		Limit: 10,
 	}
 
 	if page != "" {

@@ -14,9 +14,14 @@ type Dota struct {
 	*db.DB
 }
 
+type PaginationResponse struct {
+	Count int `json:"count"`
+	Page  int `json:"page"`
+}
+
 type Response struct {
-	//Pagination `json:"pagination"`
-	Result []models.Hero `json:"result"`
+	Pagination PaginationResponse `json:"pagination"`
+	Result     []models.Hero      `json:"result"`
 }
 
 func NewDota(logger *internal.Logger, db *db.DB) *Dota {
@@ -28,8 +33,28 @@ func NewDota(logger *internal.Logger, db *db.DB) *Dota {
 
 func (d *Dota) GetAllHeroes(w http.ResponseWriter, r *http.Request) {
 	pagination := utils.GeneratePagination(r)
-	heroes := d.DB.GetAllHeroes(pagination)
+	heroes := make(chan []models.Hero)
+	countHeroes := make(chan int)
+	go func() {
+		heroes <- d.DB.GetAllHeroes(pagination)
+	}()
+
+	go func() {
+		countHeroes <- d.DB.GetAllHeroesCount()
+	}()
+
+	apiResponse := Response{}
+	for i := 0; i < 2; i++ {
+		select {
+		case s1 := <-heroes:
+			apiResponse.Result = s1
+		case s2 := <-countHeroes:
+			totalPages := utils.CalculatePages(s2, pagination.Limit)
+			apiResponse.Pagination = PaginationResponse{Page: totalPages, Count: s2}
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(Response{Result: heroes})
+	json.NewEncoder(w).Encode(apiResponse)
 }

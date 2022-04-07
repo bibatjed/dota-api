@@ -26,11 +26,12 @@ func NewDB(logger *internal.Logger) *DB {
 
 func (d *DB) GetAllHeroes(pagination utils.Pagination) []models.Hero {
 	var hero []models.Hero
-	query := `SELECT 
-	h.name as hero_name,
-    h.localized_name as localized_name,
-    c.name as class_name,
-    h.image_url
+	query := `
+	SELECT 
+		h.name as hero_name,
+    	h.localized_name as localized_name,
+    	c.name as class_name,
+    	h.image_url
 	FROM
 		hero h
 	INNER JOIN
@@ -51,4 +52,23 @@ func (d *DB) GetAllHeroes(pagination utils.Pagination) []models.Hero {
 		return make([]models.Hero, 0)
 	}
 	return hero
+}
+
+func (d *DB) GetAllHeroesCount() int {
+	query := `
+	SELECT 
+		count(*) as hero_count
+	FROM
+		hero h`
+
+
+	var count int
+
+	err := d.DB.QueryRow(query).Scan(&count)
+	if err != nil {
+		fmt.Print(err)
+		return 0
+	}
+
+	return count
 }
