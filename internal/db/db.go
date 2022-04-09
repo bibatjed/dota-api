@@ -24,7 +24,7 @@ func NewDB(logger *internal.Logger) *DB {
 	return &DB{db}
 }
 
-func (d *DB) GetAllHeroes(pagination utils.Pagination) []models.Hero {
+func (d *DB) GetAllHeroes(pagination utils.Pagination, search string) []models.Hero {
 	var hero []models.Hero
 	query := `
 	SELECT 
@@ -35,7 +35,12 @@ func (d *DB) GetAllHeroes(pagination utils.Pagination) []models.Hero {
 	FROM
 		hero h
 	INNER JOIN
-		class c ON c.id = h.class_id`
+		class c ON c.id = h.class_id
+	WHERE 1 + 1`
+
+	if search != ""{
+		query += "\n AND h.localized_name LIKE '" + search + "%'"
+	}
 
 	query += "\nLIMIT " + strconv.Itoa(pagination.Limit)
 	query += " OFFSET " + strconv.Itoa(pagination.Offset)

@@ -33,10 +33,11 @@ func NewDota(logger *internal.Logger, db *db.DB) *Dota {
 
 func (d *Dota) GetAllHeroes(w http.ResponseWriter, r *http.Request) {
 	pagination := utils.GeneratePagination(r)
+	search := utils.GenerateFilter(r)
 	heroes := make(chan []models.Hero)
 	countHeroes := make(chan int)
 	go func() {
-		heroes <- d.DB.GetAllHeroes(pagination)
+		heroes <- d.DB.GetAllHeroes(pagination, search)
 	}()
 
 	go func() {
